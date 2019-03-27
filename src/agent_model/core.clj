@@ -78,7 +78,6 @@
       (recur (inc i) (conj x (create-quil-agent (rand-int 500) (rand-int 500))))
       x)))
 
-;;(def p1 (atom people))
 ;;(doseq [x people] (println (dist-between-agents @(people 3) @x)))
 ;;(doseq [x people] (println (human? x)))
 
