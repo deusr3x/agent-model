@@ -1,14 +1,14 @@
 # agent-model
 
-A Clojure library designed to ... well, that part is up to you.
+Playing with Clojure making a small agent-based model.  Learning the different Clojure types.  Using [Quil](http://quil.info) for the graphics.
 
 ## Usage
 
-FIXME
+Currently running in emacs using cider-jack-in.
 
 ## License
 
-Copyright © 2019 FIXME
+Copyright © 2019
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at
