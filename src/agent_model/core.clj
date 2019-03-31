@@ -77,14 +77,51 @@
       (if (and (< (dist-between-agents p x) 10) (not= (:id x) (:id p)) (not (human? x)))
         (-> p
             (assoc-in [:human] false))
-        p))
+        ))
     p))
+
+(defn in-range? [x]
+  (if (< x 10) true false))
+
+(defn check-dist2 [p points]
+  (->> (for [x points]
+    (if (->> x
+         (dist-between-agents p)
+         (in-range?))
+      (assoc-in x [:human] false)
+      ))
+       (remove nil?)))
+
+(defn check-dist3 [p points]
+  (for [x (range (count points))]
+    (if (and (human? p) (not= (:id (points x)) (:id p)) (not (human? (points x))))
+      (when (and (< (dist-between-agents p (points x)) 0) (not (human? p)))
+        (assoc-in p [:human] false)
+      )
+     )
+   )
+  p )
+
+(defn check-dist4 [p1 p2]
+  (if (human? p1)
+    (if (and (not= (:id p1) (:id p2)) (not (human? p2)))
+      (assoc-in p1 [:human] false)
+      p1
+      )
+    p1)
+  )
+
+(defn find-points [points x y]
+  (for [ind (range(count points))
+        :let [p (points ind)]
+        :when (< (q/dist (:x p) (:y p) x y) 50)]
+    ind))
 
 (defn update-points [points]
   (reduce
    (fn [new-points ind]
-     (update-in new-points [ind] move-loc)
-     (update-in new-points [ind] check-dist points))
+     ;;(update-in new-points [ind] move-loc)
+     (update-in new-points [ind] check-dist2 points))
    points
    (range (count points))))
 
@@ -103,16 +140,6 @@
   (q/background 255)
   (doseq [p points]
     (draw-point p)))
-
-;;(defn check-dist []
-;;  (doseq [x peeps]
-;;    (if-not (human? @x)
-;;      (doseq [y peeps]
-;;        (if (and (< (dist-between-agents @x @y) 10) (not= (:id @x) (:id @y)))
-;;;;          (println (dist-between-agents @x @y) (:id @x) (:id @y) (:loc @x) (:loc @y))
-;;          (dosync (alter y assoc-in [:human] false))
-;;          )))))
-
 
 (q/defsketch agent-model
   :features [:no-bind-output]
