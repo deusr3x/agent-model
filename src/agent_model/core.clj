@@ -72,58 +72,18 @@
         (assoc-in [:y] newy))))
 
 (defn check-dist [p points]
-  (if (human? p)
     (for [x points]
       (if (and (< (dist-between-agents p x) 10) (not= (:id x) (:id p)) (not (human? x)))
         (-> p
             (assoc-in [:human] false))
         ))
-    ))
-
-(defn check-dist-01 [p points]
-  (let [y 1]
-    (if (human? p)
-      (loop [x 0]
-        (when (and (< x (count points)) (> y 0))
-          (let [n (points x)]
-            (if (and (< (dist-between-agents p n) 10) (not= (:id p) (:id n)) (not (human? n)))
-              ((assoc-in p [:human] false)
-               (dec y))
-              ))
-          (recur (inc x)))))))
+    )
 
 (defn in-range? [x]
   (if (< x 10) true false))
+
 (defn is-same? [a b]
   (if (= (:id a) (:id b)) true false))
-
-(defn check-dist2 [p points]
-  (->> (for [x points]
-    (if (->> x
-         (dist-between-agents p)
-         (in-range?))
-      (assoc-in p [:human] false)
-      ))
-       (remove nil?)))
-
-(defn check-dist3 [p points]
-  (for [x (range (count points))]
-    (if (and (human? p) (not= (:id (points x)) (:id p)) (not (human? (points x))))
-      (when (and (< (dist-between-agents p (points x)) 0) (not (human? p)))
-        (assoc-in p [:human] false)
-      )
-     )
-   )
-  p )
-
-(defn check-dist4 [p1 p2]
-  (if (human? p1)
-    (if (and (not= (:id p1) (:id p2)) (not (human? p2)))
-      (assoc-in p1 [:human] false)
-      p1
-      )
-    p1)
-  )
 
 (defn find-points [points x y]
   (for [ind (range(count points))
@@ -136,13 +96,15 @@
     (if (->> x
              (remove nil?)
              (take 1)
-             (empty?)) p (remove nil? x))))
+             (empty?)) p (nth (->> x
+                                   (remove nil?)
+                                   (take 1)) 0))))
 
 (defn update-points [points]
   (reduce
    (fn [new-points ind]
-     (update-in new-points [ind] move-loc)
-     (update-in new-points [ind] get-points points))
+     (-> (update-in new-points [ind] move-loc)
+         (update-in [ind] get-points points)))
    points
    (range (count points))))
 
