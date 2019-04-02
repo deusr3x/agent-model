@@ -78,17 +78,31 @@
         (-> p
             (assoc-in [:human] false))
         ))
-    p))
+    ))
+
+(defn check-dist-01 [p points]
+  (let [y 1]
+    (if (human? p)
+      (loop [x 0]
+        (when (and (< x (count points)) (> y 0))
+          (let [n (points x)]
+            (if (and (< (dist-between-agents p n) 10) (not= (:id p) (:id n)) (not (human? n)))
+              ((assoc-in p [:human] false)
+               (dec y))
+              ))
+          (recur (inc x)))))))
 
 (defn in-range? [x]
   (if (< x 10) true false))
+(defn is-same? [a b]
+  (if (= (:id a) (:id b)) true false))
 
 (defn check-dist2 [p points]
   (->> (for [x points]
     (if (->> x
          (dist-between-agents p)
          (in-range?))
-      (assoc-in x [:human] false)
+      (assoc-in p [:human] false)
       ))
        (remove nil?)))
 
@@ -117,11 +131,18 @@
         :when (< (q/dist (:x p) (:y p) x y) 50)]
     ind))
 
+(defn get-points [p points]
+  (let [x (check-dist p points)]
+    (if (->> x
+             (remove nil?)
+             (take 1)
+             (empty?)) p (remove nil? x))))
+
 (defn update-points [points]
   (reduce
    (fn [new-points ind]
-     ;;(update-in new-points [ind] move-loc)
-     (update-in new-points [ind] check-dist2 points))
+     (update-in new-points [ind] move-loc)
+     (update-in new-points [ind] get-points points))
    points
    (range (count points))))
 
