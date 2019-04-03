@@ -92,13 +92,10 @@
     ind))
 
 (defn get-points [p points]
-  (let [x (check-dist p points)]
-    (if (->> x
-             (remove nil?)
-             (take 1)
-             (empty?)) p (nth (->> x
-                                   (remove nil?)
-                                   (take 1)) 0))))
+  (let [x (check-dist p points)
+        y (remove nil? x)
+        z (take 1 y)]
+    (if (empty? z) p (nth z 0))))
 
 (defn update-points [points]
   (reduce
