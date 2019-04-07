@@ -47,7 +47,7 @@
 
 (defn find-min-index [v]
   (reduce (fn [[min-idx min-val curr-idx] curr-val]
-            (if (< curr-val min-val)
+            (if (and (< curr-val min-val) (not= curr-val 0.0))
               [curr-idx curr-val (inc curr-idx)]
               [min-idx min-val (inc curr-idx)]))
           [-1 Double/POSITIVE_INFINITY 0]
@@ -79,6 +79,33 @@
         ))
     )
 
+(defn get-dist [p points]
+  (for [x points]
+    (if (:human x)
+      (dist-between-agents p x)
+      0.0)))
+
+(defn get-min-point [v]
+  (nth (find-min-index v) 0))
+
+(defn get-min-index [p points]
+  (->> (get-dist p points)
+       (get-min-point)))
+
+(defn move-toward-point [p target]
+  (let [x1 (:x p)
+        y1 (:y p)
+        x2 (:x target)
+        y2 (:y target)
+        theta (q/atan2 (- y2 y1) (- x2 x1))
+        dx (* v (q/cos theta))
+        dy (* v (q/sin theta))
+        newx (mod (+ x1 dx) 500)
+        newy (mod (+ y1 dy) 500)]
+    (-> p
+        (assoc-in [:x] newx)
+        (assoc-in [:y] newy))))
+
 (defn in-range? [x]
   (if (< x 10) true false))
 
@@ -97,17 +124,29 @@
         z (take 1 y)]
     (if (empty? z) p (nth z 0))))
 
+(defn move [p points]
+  (if (not (:human p))
+    (move-toward-point p (points (get-min-index p points)))
+    (move-loc p)))
+        
+
 (defn update-points [points]
   (reduce
    (fn [new-points ind]
-     (-> (update-in new-points [ind] move-loc)
+     (-> (update-in new-points [ind] move points) ;;(update-in new-points [ind] move-loc)
          (update-in [ind] get-points points)))
    points
    (range (count points))))
 
+(defn update-running [running points]
+  (if (empty? (filter human? points))
+    false
+    true))
+
 (defn update-state [state]
   (if (:running? state)
-    (update-in state [:points] update-points)
+    (-> (update-in state [:points] update-points)
+        (update-in [:running?] update-running (:points state)))
     state))
 
 (defn draw-point [p]
