@@ -128,25 +128,26 @@
   (if (not (:human p))
     (move-toward-point p (points (get-min-index p points)))
     (move-loc p)))
-        
 
 (defn update-points [points]
   (reduce
    (fn [new-points ind]
-     (-> (update-in new-points [ind] move points) ;;(update-in new-points [ind] move-loc)
+     (-> (update-in new-points [ind] move points)
          (update-in [ind] get-points points)))
    points
    (range (count points))))
 
-(defn update-running [running points]
-  (if (empty? (filter human? points))
+(defn update-running [state]
+  (if (empty? (filter human? (:points state)))
     false
     true))
 
+(defn print-running [state]
+  (prn (:running? state)))
+
 (defn update-state [state]
-  (if (:running? state)
-    (-> (update-in state [:points] update-points)
-        (update-in [:running?] update-running (:points state)))
+  (if (update-running state)
+    (update-in state [:points] update-points)
     state))
 
 (defn draw-point [p]
